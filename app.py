@@ -10,7 +10,7 @@ app = Flask(__name__)
 model = tf.keras.models.load_model("plant_disease_model.h5")
 classes = ["Apple Scab", "Black Rot", "Healthy"]
 
-# Simplified Tips
+
 TIPS = {
     "Apple Scab": [
         "Remove and clear away fallen leaves.",
