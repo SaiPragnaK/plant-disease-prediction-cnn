@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Health Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #27ae60;
+            --dark: #2c3e50;
+            --grey: #95a5a6;
+            --light-bg: #f4f7f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 { font-size: 24px; color: var(--green); margin-bottom: 10px; }
+        header p { color: var(--grey); font-size: 14px; margin-bottom: 30px; }
+
+        /* Simple Upload Area */
+        .upload-box {
+            border: 2px dashed #dcdde1;
+            border-radius: 15px;
+            padding: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            background: #fafafa;
+        }
+
+        .upload-box:hover { border-color: var(--green); background: #f0fff4; }
+        .upload-box p { font-size: 14px; color: var(--dark); font-weight: 600; }
+
+        input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        .btn {
+            background: var(--green);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover { background: #219150; }
+
+        /* Results Card */
+        .result-card {
+            margin-top: 30px;
+            text-align: left;
+            border-top: 1px solid #eee;
+            padding-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .label { font-size: 12px; color: var(--grey); text-transform: uppercase; font-weight: 700; }
+        .value { font-size: 22px; color: var(--dark); margin-bottom: 5px; }
+        .score { font-size: 14px; color: var(--green); margin-bottom: 20px; }
+
+        .tips-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--green);
+        }
+
+        .tips-box h4 { font-size: 14px; margin-bottom: 8px; }
+        .tips-box li { font-size: 13px; color: #555; margin-left: 15px; margin-bottom: 5px; }
+
+        /* Loading */
+        #loading { display: none; margin-top: 20px; }
+        .spinner {
+            width: 30px; height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Plant Health AI</h1>
+        <p>Simple leaf analysis for better gardening</p>
+    </header>
+
+    <form method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
+        <div class="upload-box">
+            <p id="file-name">Click to upload leaf photo</p>
+            <input type="file" name="file" onchange="updateLabel(this)" required>
+        </div>
+
+        <button type="submit" class="btn" id="main-btn">Check Health</button>
+    </form>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p style="font-size: 14px; margin-top: 10px;">Checking...</p>
+    </div>
+
+    {% if prediction %}
+    <div class="result-card">
+        <img src="{{ url_for('static', filename=image_path) }}">
+        
+        <p class="label">Result</p>
+        <p class="value">{{ prediction }}</p>
+        <p class="score">Accuracy: {{ "%.1f"|format(confidence) }}%</p>
+
+        <div class="tips-box" style="border-left-color: {{ '#e74c3c' if prediction != 'Healthy' else '#27ae60' }}">
+            <h4>Next Steps:</h4>
+            <ul>
+                {% for tip in tips %}
+                    <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <button onclick="window.location.href='/'" class="btn" style="background: #eee; color: #555; margin-top: 15px;">New Scan</button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function updateLabel(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('file-name').innerHTML = "Selected: " + input.files[0].name;
+        }
+    }
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('main-btn').style.display = 'none';
+        if(document.querySelector('.result-card')) document.querySelector('.result-card').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
